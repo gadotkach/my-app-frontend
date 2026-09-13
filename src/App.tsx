@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
+import Integrations from "./pages/Integrations";
 import { useAuthStore } from "./stores/authStore";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -43,10 +44,6 @@ function Products() {
 
 function Sales() {
   return <div className="text-gray-900">Продажи (в разработке)</div>;
-}
-
-function Integrations() {
-  return <div className="text-gray-900">Интеграции (в разработке)</div>;
 }
 
 export default function App() {
