@@ -55,10 +55,10 @@ export default function Dashboard() {
         { label: "Продаж", value: summary.sales_count.toString(), accent: "text-blue-600" },
         { label: "Выручка", value: formatMoney(summary.total_revenue), accent: "text-green-600" },
         { label: "Комиссия", value: formatMoney(summary.total_commission), accent: "text-orange-600" },
+        { label: "Логистика", value: formatMoney(summary.total_logistics), accent: "text-red-600" },
         { label: "Чистая прибыль", value: formatMoney(summary.net_profit), accent: "text-purple-600" },
       ]
     : [];
-
   return (
     <div className="max-w-6xl">
       <div className="flex justify-between items-center mb-6">
@@ -92,7 +92,7 @@ export default function Dashboard() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             {cards.map((c) => (
               <div key={c.label} className="bg-white rounded-lg shadow-sm p-5">
                 <div className="text-sm text-gray-500 mb-1">{c.label}</div>
@@ -122,12 +122,15 @@ export default function Dashboard() {
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                       Выручка
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                      Комиссия
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                      Прибыль
-                    </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  Комиссия
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  Логистика
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                  Прибыль
+                </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -142,12 +145,15 @@ export default function Dashboard() {
                       <td className="px-4 py-3 text-sm text-gray-700 text-right">
                         {formatMoney(m.total_revenue)}
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500 text-right">
-                        {formatMoney(m.total_commission)}
-                      </td>
-                      <td className="px-4 py-3 text-sm font-medium text-green-600 text-right">
-                        {formatMoney(m.net_profit)}
-                      </td>
+                    <td className="px-4 py-3 text-sm text-gray-500 text-right">
+                      {formatMoney(m.total_commission)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500 text-right">
+                      {formatMoney(m.total_logistics)}
+                    </td>
+                    <td className="px-4 py-3 text-sm font-medium text-green-600 text-right">
+                      {formatMoney(m.net_profit)}
+                    </td>
                     </tr>
                   ))}
                 </tbody>
