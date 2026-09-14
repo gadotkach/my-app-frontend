@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Integrations from "./pages/Integrations";
 import Products from "./pages/Products";
 import Sales from "./pages/Sales";
+import Dashboard from "./pages/Dashboard";
 import { useAuthStore } from "./stores/authStore";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -29,15 +30,6 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   }
 
   return <>{children}</>;
-}
-
-function Dashboard() {
-  return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">Дашборд</h1>
-      <p className="text-gray-600">Здесь будет аналитика продаж.</p>
-    </div>
-  );
 }
 
 export default function App() {
