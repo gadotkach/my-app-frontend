@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Integrations from "./pages/Integrations";
 import Products from "./pages/Products";
 import Sales from "./pages/Sales";
@@ -43,6 +44,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />    
         <Route
           element={
             <RequireAuth>
