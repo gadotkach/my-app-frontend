@@ -9,6 +9,7 @@ import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Integrations from "./pages/Integrations";
 import Products from "./pages/Products";
+import Sales from "./pages/Sales";
 import { useAuthStore } from "./stores/authStore";
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -37,10 +38,6 @@ function Dashboard() {
       <p className="text-gray-600">Здесь будет аналитика продаж.</p>
     </div>
   );
-}
-
-function Sales() {
-  return <div className="text-gray-900">Продажи (в разработке)</div>;
 }
 
 export default function App() {
