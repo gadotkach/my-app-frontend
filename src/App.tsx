@@ -11,6 +11,8 @@ import Register from "./pages/Register";
 import Integrations from "./pages/Integrations";
 import Products from "./pages/Products";
 import Sales from "./pages/Sales";
+import Pricing from "./pages/Pricing";
+import Expired from "./pages/Expired";
 import Dashboard from "./pages/Dashboard";
 import { useAuthStore } from "./stores/authStore";
 
@@ -33,6 +35,21 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function RequireActiveSubscription({ children }: { children: React.ReactNode }) {
+  const user = useAuthStore((s) => s.user);
+
+  if (!user) return null;
+
+  if (
+    user.subscription_status === "none" ||
+    user.subscription_status === "expired"
+  ) {
+    return <Navigate to="/pricing" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 export default function App() {
   const bootstrap = useAuthStore((s) => s.bootstrap);
 
@@ -45,10 +62,14 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />    
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/expired" element={<Expired />} />
         <Route
           element={
             <RequireAuth>
-              <Layout />
+              <RequireActiveSubscription>
+                <Layout />
+              </RequireActiveSubscription>
             </RequireAuth>
           }
         >

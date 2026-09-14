@@ -1,4 +1,5 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
+import SubscriptionBadge from "./SubscriptionBadge";
 import { useAuthStore } from "../stores/authStore";
 
 export default function Layout() {
@@ -46,6 +47,7 @@ export default function Layout() {
               {user && (
                 <span className="text-sm text-gray-700">{user.name}</span>
               )}
+              {user && <SubscriptionBadge />}
               <button
                 onClick={handleLogout}
                 className="text-sm text-gray-500 hover:text-red-600"
