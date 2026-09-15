@@ -9,6 +9,7 @@ import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Integrations from "./pages/Integrations";
+import Calculator from "./pages/Calculator";
 import Products from "./pages/Products";
 import Sales from "./pages/Sales";
 import Pricing from "./pages/Pricing";
@@ -77,6 +78,7 @@ export default function App() {
           <Route path="/products" element={<Products />} />
           <Route path="/sales" element={<Sales />} />
           <Route path="/integrations" element={<Integrations />} />
+          <Route path="/calculator" element={<Calculator />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
