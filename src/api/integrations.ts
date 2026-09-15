@@ -3,7 +3,7 @@ import { api } from "./client";
 export interface MarketplaceAccount {
   id: number;
   marketplace_code: string;
-  client_id: string;
+  client_id: string | null;
   created_at: string;
 }
 
@@ -24,6 +24,8 @@ export const integrationsApi = {
     return data;
   },
 
+  // --- Ozon ---
+
   async connectOzon(clientId: string, apiKey: string): Promise<MarketplaceAccount> {
     const { data } = await api.post<MarketplaceAccount>("/integrations/ozon/connect", {
       marketplace_code: "ozon",
@@ -41,6 +43,28 @@ export const integrationsApi = {
   async syncSales(fromIso: string, toIso: string): Promise<SyncSalesResult> {
     const { data } = await api.post<SyncSalesResult>(
       `/integrations/ozon/sync/sales?from=${fromIso}&to=${toIso}`
+    );
+    return data;
+  },
+
+  // --- Wildberries ---
+
+  async connectWb(apiKey: string): Promise<MarketplaceAccount> {
+    const { data } = await api.post<MarketplaceAccount>("/integrations/wb/connect", {
+      marketplace_code: "wildberries",
+      api_key: apiKey,
+    });
+    return data;
+  },
+
+  async syncWbProducts(): Promise<SyncResult> {
+    const { data } = await api.post<SyncResult>("/integrations/wb/sync/products");
+    return data;
+  },
+
+  async syncWbSales(fromIso: string, toIso: string): Promise<SyncSalesResult> {
+    const { data } = await api.post<SyncSalesResult>(
+      `/integrations/wb/sync/sales?from=${fromIso}&to=${toIso}`
     );
     return data;
   },

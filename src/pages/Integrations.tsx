@@ -8,12 +8,19 @@ import {
 
 export default function Integrations() {
   const [accounts, setAccounts] = useState<MarketplaceAccount[]>([]);
-  const [clientId, setClientId] = useState("");
-  const [apiKey, setApiKey] = useState("");
-  const [connecting, setConnecting] = useState(false);
-  const [syncing, setSyncing] = useState<"products" | "sales" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  // Ozon
+  const [ozonClientId, setOzonClientId] = useState("");
+  const [ozonApiKey, setOzonApiKey] = useState("");
+  const [ozonConnecting, setOzonConnecting] = useState(false);
+  const [ozonSyncing, setOzonSyncing] = useState<"products" | "sales" | null>(null);
+
+  // WB
+  const [wbApiKey, setWbApiKey] = useState("");
+  const [wbConnecting, setWbConnecting] = useState(false);
+  const [wbSyncing, setWbSyncing] = useState<"products" | "sales" | null>(null);
 
   async function loadAccounts() {
     try {
@@ -28,72 +35,120 @@ export default function Integrations() {
     loadAccounts();
   }, []);
 
-  async function handleConnect(e: FormEvent) {
+  function extractError(err: unknown, fallback: string): string {
+    return (
+      (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ||
+      fallback
+    );
+  }
+
+  const ozonConnected = accounts.some((a) => a.marketplace_code === "ozon");
+  const wbConnected = accounts.some((a) => a.marketplace_code === "wildberries");
+
+  // --- Ozon handlers ---
+
+  async function handleConnectOzon(e: FormEvent) {
     e.preventDefault();
-    setConnecting(true);
+    setOzonConnecting(true);
     setError(null);
     setMessage(null);
     try {
-      await integrationsApi.connectOzon(clientId, apiKey);
-      setClientId("");
-      setApiKey("");
+      await integrationsApi.connectOzon(ozonClientId, ozonApiKey);
+      setOzonClientId("");
+      setOzonApiKey("");
       setMessage("Ozon успешно подключён");
       await loadAccounts();
-    } catch (err: unknown) {
-      const detail =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ||
-        "Ошибка подключения";
-      setError(detail);
+    } catch (err) {
+      setError(extractError(err, "Ошибка подключения Ozon"));
     } finally {
-      setConnecting(false);
+      setOzonConnecting(false);
     }
   }
 
-  async function handleSyncProducts() {
-    setSyncing("products");
+  async function handleSyncOzonProducts() {
+    setOzonSyncing("products");
     setError(null);
     setMessage(null);
     try {
       const result: SyncResult = await integrationsApi.syncProducts();
       setMessage(
-        `Товары синхронизированы: всего ${result.synced}, создано ${result.created}, обновлено ${result.updated}`
+        `Ozon — товары: всего ${result.synced}, создано ${result.created}, обновлено ${result.updated}`
       );
-    } catch (err: unknown) {
-      const detail =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ||
-        "Ошибка синхронизации товаров";
-      setError(detail);
+    } catch (err) {
+      setError(extractError(err, "Ошибка синхронизации товаров Ozon"));
     } finally {
-      setSyncing(null);
+      setOzonSyncing(null);
     }
   }
 
-  async function handleSyncSales() {
-    setSyncing("sales");
+  async function handleSyncOzonSales() {
+    setOzonSyncing("sales");
     setError(null);
     setMessage(null);
     try {
-      const to = new Date();
-      const from = new Date();
-      from.setDate(from.getDate() - 30);
-      const result: SyncSalesResult = await integrationsApi.syncSales(
-        from.toISOString(),
-        to.toISOString()
-      );
+      const { from, to } = lastNDaysIso(30);
+      const result: SyncSalesResult = await integrationsApi.syncSales(from, to);
       setMessage(
-        `Продажи синхронизированы: всего ${result.synced}, создано ${result.created}, обновлено ${result.updated}`
+        `Ozon — продажи: всего ${result.synced}, создано ${result.created}, обновлено ${result.updated}`
       );
-    } catch (err: unknown) {
-      const detail =
-        (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail ||
-        "Ошибка синхронизации продаж";
-      setError(detail);
+    } catch (err) {
+      setError(extractError(err, "Ошибка синхронизации продаж Ozon"));
     } finally {
-      setSyncing(null);
+      setOzonSyncing(null);
     }
   }
 
-  const ozonConnected = accounts.some((a) => a.marketplace_code === "ozon");
+  // --- WB handlers ---
+
+  async function handleConnectWb(e: FormEvent) {
+    e.preventDefault();
+    setWbConnecting(true);
+    setError(null);
+    setMessage(null);
+    try {
+      await integrationsApi.connectWb(wbApiKey);
+      setWbApiKey("");
+      setMessage("Wildberries успешно подключён");
+      await loadAccounts();
+    } catch (err) {
+      setError(extractError(err, "Ошибка подключения WB"));
+    } finally {
+      setWbConnecting(false);
+    }
+  }
+
+  async function handleSyncWbProducts() {
+    setWbSyncing("products");
+    setError(null);
+    setMessage(null);
+    try {
+      const result: SyncResult = await integrationsApi.syncWbProducts();
+      setMessage(
+        `WB — товары: всего ${result.synced}, создано ${result.created}, обновлено ${result.updated}`
+      );
+    } catch (err) {
+      setError(extractError(err, "Ошибка синхронизации товаров WB"));
+    } finally {
+      setWbSyncing(null);
+    }
+  }
+
+  async function handleSyncWbSales() {
+    setWbSyncing("sales");
+    setError(null);
+    setMessage(null);
+    try {
+      const { from, to } = lastNDaysIso(30);
+      const result: SyncSalesResult = await integrationsApi.syncWbSales(from, to);
+      setMessage(
+        `WB — продажи: всего ${result.synced}, создано ${result.created}, обновлено ${result.updated}`
+      );
+    } catch (err) {
+      setError(extractError(err, "Ошибка синхронизации продаж WB"));
+    } finally {
+      setWbSyncing(null);
+    }
+  }
 
   return (
     <div className="max-w-4xl">
@@ -110,6 +165,7 @@ export default function Integrations() {
         </div>
       )}
 
+      {/* --- Ozon --- */}
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Ozon</h2>
 
@@ -123,23 +179,23 @@ export default function Integrations() {
             </div>
             <div className="flex gap-3">
               <button
-                onClick={handleSyncProducts}
-                disabled={syncing !== null}
+                onClick={handleSyncOzonProducts}
+                disabled={ozonSyncing !== null}
                 className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-4 py-2 rounded-md text-sm"
               >
-                {syncing === "products" ? "Синхронизация..." : "Синхр. товары"}
+                {ozonSyncing === "products" ? "Синхронизация..." : "Синхр. товары"}
               </button>
               <button
-                onClick={handleSyncSales}
-                disabled={syncing !== null}
+                onClick={handleSyncOzonSales}
+                disabled={ozonSyncing !== null}
                 className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-4 py-2 rounded-md text-sm"
               >
-                {syncing === "sales" ? "Синхронизация..." : "Синхр. продажи"}
+                {ozonSyncing === "sales" ? "Синхронизация..." : "Синхр. продажи"}
               </button>
             </div>
           </div>
         ) : (
-          <form onSubmit={handleConnect} className="space-y-4">
+          <form onSubmit={handleConnectOzon} className="space-y-4">
             <p className="text-sm text-gray-600 mb-2">
               Введите Client-Id и Api-Key из личного кабинета Ozon Seller.
             </p>
@@ -149,8 +205,8 @@ export default function Integrations() {
               </label>
               <input
                 type="text"
-                value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
+                value={ozonClientId}
+                onChange={(e) => setOzonClientId(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
@@ -161,22 +217,98 @@ export default function Integrations() {
               </label>
               <input
                 type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
+                value={ozonApiKey}
+                onChange={(e) => setOzonApiKey(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
             </div>
             <button
               type="submit"
-              disabled={connecting}
+              disabled={ozonConnecting}
               className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white px-4 py-2 rounded-md"
             >
-              {connecting ? "Подключение..." : "Подключить Ozon"}
+              {ozonConnecting ? "Подключение..." : "Подключить Ozon"}
+            </button>
+          </form>
+        )}
+      </div>
+
+      {/* --- Wildberries --- */}
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Wildberries</h2>
+
+        {wbConnected ? (
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-600 font-medium">✓ Подключён</p>
+              <p className="text-sm text-gray-500">
+                Через API-токен (без Client-Id)
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleSyncWbProducts}
+                disabled={wbSyncing !== null}
+                className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300 text-white px-4 py-2 rounded-md text-sm"
+              >
+                {wbSyncing === "products" ? "Синхронизация..." : "Синхр. товары"}
+              </button>
+              <button
+                onClick={handleSyncWbSales}
+                disabled={wbSyncing !== null}
+                className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300 text-white px-4 py-2 rounded-md text-sm"
+              >
+                {wbSyncing === "sales" ? "Синхронизация..." : "Синхр. продажи"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleConnectWb} className="space-y-4">
+            <p className="text-sm text-gray-600 mb-2">
+              Создайте токен в{" "}
+              <a
+                href="https://seller.wildberries.ru"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-purple-600 hover:underline"
+              >
+                личном кабинете WB Партнёры
+              </a>{" "}
+              → Профиль → Интеграции по API. Выберите «Базовый токен» и права:
+              Контент (RO) и Статистика (RO).
+            </p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                API-токен
+              </label>
+              <input
+                type="password"
+                value={wbApiKey}
+                onChange={(e) => setWbApiKey(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={wbConnecting}
+              className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300 text-white px-4 py-2 rounded-md"
+            >
+              {wbConnecting ? "Подключение..." : "Подключить Wildberries"}
             </button>
           </form>
         )}
       </div>
     </div>
   );
+}
+
+// --- helpers ---
+
+function lastNDaysIso(days: number): { from: string; to: string } {
+  const to = new Date();
+  const from = new Date();
+  from.setDate(from.getDate() - days);
+  return { from: from.toISOString(), to: to.toISOString() };
 }
